@@ -3,6 +3,7 @@ A repo for CenturyLinks coding challenge 06/2019 to get information from the Git
 
 # Requirements:
 Java JRE of 1.8+
+
 Maven (latest)
 
 ## Dependencies:
@@ -20,19 +21,19 @@ Google Gson - Used for object to json serialization
 Response of max depth
 ```json
 {
-    "userId": string,
+    "userId": "string",
     "followers": 
     [
         {
-            "userId": string,
+            "userId": "string",
             "followers": 
             [
                 {
-                    "userId": string,
+                    "userId": "string",
                     "followers":
                     [
                         {
-                            "userId": string
+                            "userId": "string"
                         }
                     ]
                 }
@@ -44,38 +45,38 @@ Response of max depth
 
 ## *Nested repositories and stargazers by username*
    * Type: GET
-   * url: /github/users/{username}/repos/stargazers
+   * url: /github/repos/{username}/repos/stargazers
      * param: username - any github username
    * Produces: Json
 #### Example:
 Response of max depth
 ```json
 {
-    "userId": string,
+    "userId": "string",
     "repos": 
     [
         {
-            "name": string,
+            "name": "string",
             "stargazers": 
             [
                 {
-                    "userId": string,
+                    "userId": "string",
                     "repos":
                     [
                         {
-                            "name": string,
+                            "name": "string",
                             "stargazers": 
                             [
                                 {
-                                    "userId": string,
+                                    "userId": "string",
                                     "repos":
                                     [
                                         {
-                                            "name": string,
+                                            "name": "string",
                                             "stargazers": 
                                             [
                                                 {
-                                                    "userId": string
+                                                    "userId": "string"
                                                 }
                                             ]
                                         }
@@ -97,19 +98,23 @@ Response of max depth
 1. From the main project level run a `java -jar target github.challenge-0.0.1-SNAPSHOT-jar-with-dependencies.jar` which will bring up the service
 
 ## How to test:
-After following the "How to Run" steps the service should start up as an embedded grizzly web service with the base url of "localhost:8080/service". You should then be able to do a simple GET request through the browser or an application like Postman/Insomnia against one of the API endpoints. I used the username "atmos" to test against to make sure there is enough nested data to get the maximum lenght results. I also used the username "ahoopes16" to test getting  a partial depth return.
+After following the "How to Run" steps the service should start up as an embedded grizzly web service with the base url of "localhost:8080/service". You should then be able to do a simple GET request through the browser or an application like Postman/Insomnia against one of the API endpoints. 
+
+For the followers endpoint I used the username "atmos" to test against to make sure there is enough nested data to get the maximum length results. I also used the username "ahoopes16" to test getting a partial depth return.
+
+For the repos and stargazers endpoint I used the username "jango2106" to test against which has both fully nested and partially nested data.
 
 ## Notes:
-This services uses and unauthenticated request to the GitHub API which means it is limited to 60 requests per hour per IP address. This may result in some false results seen below. If this happens, just wait an hour and the requests should come back correctly.
+This services uses an unauthenticated request to the GitHub API which means it is limited to 60 requests per hour per IP address. This may result in some false results seen below. If this happens, just wait an hour and the requests should come back correctly.
 ```json
 {
-    "userId": "atmos",
+    "userId": "string",
     "followers": []
 }
 ```
 ```json
 {
-    "userId": "atmos",
+    "userId": "string",
     "repos": []
 }
 ```
