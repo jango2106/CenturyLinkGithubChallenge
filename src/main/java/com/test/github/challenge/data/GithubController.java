@@ -63,13 +63,13 @@ public class GithubController {
 	}
 
 	/**
-	 * Getsa {@link GithubUser} for the given username with the associated
+	 * Gets a {@link GithubUser} for the given username with the associated
 	 * repositories and stargazers of those repositories. Then it will retrieve the
 	 * repositories and stargazers of those stargazers, and so on until three levels
 	 * deep.
 	 *
-	 * @param userId
-	 * @return
+	 * @param userId - a github username
+	 * @return a {@link GithubUser} associated to the requested user
 	 */
 	public GithubUser getReposAndStargazers(final String userId) {
 		final GithubUser.Builder userBuilder = new GithubUser.Builder();
