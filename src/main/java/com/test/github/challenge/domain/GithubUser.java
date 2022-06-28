@@ -1,5 +1,7 @@
 package com.test.github.challenge.domain;
 
+import org.json.JSONPropertyIgnore;
+
 import java.util.List;
 
 /**

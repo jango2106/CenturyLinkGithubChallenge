@@ -2,6 +2,9 @@ package com.test.github.challenge.data;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -14,6 +17,7 @@ import org.json.JSONObject;
 
 import com.test.github.challenge.domain.GithubRepo;
 import com.test.github.challenge.domain.GithubUser;
+import sun.plugin2.message.GetAppletMessage;
 
 /**
  * Controller used to access data from the Github API.
@@ -36,6 +40,7 @@ public class GithubController {
 	 * associated to it. It will then retrieve all of the followers of those
 	 * followers, and so on until it gets 3 levels deep.
 	 *
+	 * @deprecated - 6/28/2022 FINALLY! This implementation has been bugging me for years
 	 * @param userId - a Github username
 	 * @return a {@link GithubUser} associated to the requested user
 	 */
@@ -63,11 +68,26 @@ public class GithubController {
 	}
 
 	/**
+	 * Gets a {@link GithubUser} for the given username with all of the followers
+	 * associated to it. It will then retrieve all of the followers of those
+	 * followers, and so on until it gets 3 levels deep.
+	 *
+	 * @since 6/28/2022 Updated with better implementation
+	 * @param userId - a Github username
+	 * @return a {@link GithubUser} associated to the requested user
+	 */
+	public GithubUser getAllFollowersRecursive(final String userId, final int depth) {
+		final GithubUser.Builder builder = new GithubUser.Builder();
+		return builder.user(userId).followers(getFollowersRecursive(userId, depth)).build();
+	}
+
+	/**
 	 * Gets a {@link GithubUser} for the given username with the associated
 	 * repositories and stargazers of those repositories. Then it will retrieve the
 	 * repositories and stargazers of those stargazers, and so on until three levels
 	 * deep.
 	 *
+	 * @deprecated 6/28/2022 FINALLY! This implementation has been bugging me for years
 	 * @param userId - a github username
 	 * @return a {@link GithubUser} associated to the requested user
 	 */
@@ -112,9 +132,50 @@ public class GithubController {
 		return userBuilder.reset().user(userId).repos(firstTierRepoList).build();
 	}
 
+
+	/**
+	 * Gets a {@link GithubUser} for the given username with the associated
+	 * repositories and stargazers of those repositories. Then it will retrieve the
+	 * repositories and stargazers of those stargazers, and so on until three levels
+	 * deep. Now with more recursion
+	 *
+	 * @since 6/28/2022 Updated finall
+	 * @param userId - a github username
+	 * @return a {@link GithubUser} associated to the requested user
+	 */
+	public GithubUser getReposAndStargazersRecursive(final String userId, final int depth) {
+		GithubUser.Builder user = new GithubUser.Builder();
+		return user.user(userId).repos(getListOfReposWithStargazersRecursive(userId, depth)).build();
+	}
+
+	/**
+	 * Gets a list of repos (GithubUser) with populated stargazers (GithubUser) recursively.
+	 *
+	 * @param userId - a github username
+	 * @param recursiveCount - number of times to keep recursively calling the function
+	 * @return a {@link GithubUser} associated to the requested user
+	 */
+	private List<GithubRepo> getListOfReposWithStargazersRecursive(final String userId, final int recursiveCount) {
+		if(recursiveCount < 0) {
+			return Collections.emptyList();
+		}
+		return getRepos(userId).stream().map(repo -> {
+			GithubRepo.Builder repoBuilder = new GithubRepo.Builder();
+			repoBuilder.name(repo);
+			repoBuilder.stargazers(getStargazers(userId, repo).stream().map(stargazer -> {
+				GithubUser.Builder userBuilder = new GithubUser.Builder();
+				userBuilder.user(stargazer);
+				userBuilder.repos(getListOfReposWithStargazersRecursive(stargazer, recursiveCount - 1));
+				return userBuilder.build();
+			}).collect(Collectors.toList()));
+			return repoBuilder.build();
+		}).collect(Collectors.toList());
+	}
+
 	/**
 	 * Retrieves a number of followers for the given userId
 	 *
+	 * @deprecated
 	 * @param userId - a Github username
 	 * @return a list of followers for the given user. If the REST call isn't
 	 *         successful, list will be returned as blank.
@@ -132,6 +193,39 @@ public class GithubController {
 			});
 		}
 		return followers;
+	}
+
+	/**
+	 * Recursively retrieves followers
+	 *
+	 * @param userId - user to get followers for
+	 * @param recursiveCount - number of times to keep recursively calling the function
+	 * @return a list of GithubUsers followers with nested followers
+	 */
+
+	private List<GithubUser> getFollowersRecursive(final String userId, final int recursiveCount) {
+		if(recursiveCount < 0) {
+			return Collections.emptyList();
+		}
+
+		final ArrayList<String> followerIds = new ArrayList<>();
+		final Response userFollowerResponse = client.path(String.format(GITHUB_FOLLOWER_URL, userId))
+				.queryParam(PER_PAGE_SIZE_PARAM, MAX_FOLLOWERS_PER_USER).request(MediaType.APPLICATION_JSON).get();
+
+		if(userFollowerResponse.getStatus() != Status.OK.getStatusCode()) {
+			return Collections.emptyList();
+		}
+
+		final JSONArray jsonFollowers = new JSONArray(userFollowerResponse.readEntity(String.class));
+		jsonFollowers.forEach((follower) -> {
+				followerIds.add((String) ((JSONObject) follower).get("login"));
+		});
+		return followerIds.stream().map((follower)-> {
+			GithubUser.Builder followerBuilder = new GithubUser.Builder();
+			followerBuilder.user(follower);
+			followerBuilder.followers(getFollowersRecursive(follower, recursiveCount - 1));
+			return followerBuilder.build();
+		}).collect(Collectors.toList());
 	}
 
 	/**
@@ -178,5 +272,4 @@ public class GithubController {
 		}
 		return stargazers;
 	}
-
 }

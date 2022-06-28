@@ -15,81 +15,45 @@ Google Gson - Used for object to json serialization
 ## *Followers and Sub-followers by username*
    * Type: GET
    * url: /github/users/{username}/followers
-     * param: username - any github username 
+     * PathParam: username - any github username 
+     * QueryParam: depth - how many steps down you want to go. Default 3
    * Produces: Json
 #### Example:
-Response of max depth
+Response of depth 1
 ```json
 {
-    "userId": "string",
-    "followers": 
-    [
-        {
-            "userId": "string",
-            "followers": 
-            [
-                {
-                    "userId": "string",
-                    "followers":
-                    [
-                        {
-                            "userId": "string"
-                        }
-                    ]
-                }
-            ]
-        }
-    ]
+  "userId": "string",
+  "followers": [
+    {
+      "userId": "string",
+      "followers": []
+    }
+  ]
 }
 ```
 
 ## *Nested repositories and stargazers by username*
    * Type: GET
    * url: /github/repos/{username}/repos/stargazers
-     * param: username - any github username
+     * PathParam: username - any github username 
+     * QueryParam: depth - how many steps down you want to go. Default 3
    * Produces: Json
 #### Example:
-Response of max depth
+Response of depth 1
 ```json
 {
-    "userId": "string",
-    "repos": 
-    [
+  "userId": "string",
+  "repos": [
+    {
+      "name": "string",
+      "stargazers": [
         {
-            "name": "string",
-            "stargazers": 
-            [
-                {
-                    "userId": "string",
-                    "repos":
-                    [
-                        {
-                            "name": "string",
-                            "stargazers": 
-                            [
-                                {
-                                    "userId": "string",
-                                    "repos":
-                                    [
-                                        {
-                                            "name": "string",
-                                            "stargazers": 
-                                            [
-                                                {
-                                                    "userId": "string"
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
-
-            ]
+          "userId": "string",
+          "repos": []
         }
-    ]
+      ]
+    }
+  ]
 }
 ```
 ## How to run:

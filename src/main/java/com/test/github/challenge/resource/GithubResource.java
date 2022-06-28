@@ -1,9 +1,6 @@
 package com.test.github.challenge.resource;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -32,8 +29,8 @@ public class GithubResource {
 	 */
 	@GET
 	@Path("/users/{username}/followers")
-	public Response getUserFollowersAndSubfollowers(@PathParam("username") final String username) {
-		final GithubUser user = controller.getAllFollowers(username);
+	public Response getUserFollowersAndSubfollowers(@PathParam("username") final String username, @QueryParam("depth") final Integer depth) {
+		final GithubUser user = controller.getAllFollowersRecursive(username, depth == null ? 3 : depth);
 		return Response.ok(new Gson().toJson(user)).build();
 	}
 
@@ -48,8 +45,8 @@ public class GithubResource {
 	 */
 	@GET
 	@Path("/users/{username}/repos/stargazers")
-	public Response getReposAndStargazers(@PathParam("username") final String username) {
-		final GithubUser user = controller.getReposAndStargazers(username);
+	public Response getReposAndStargazers(@PathParam("username") final String username, @QueryParam("depth") final Integer depth) {
+		final GithubUser user = controller.getReposAndStargazersRecursive(username, depth == null ? 3 : depth);
 		return Response.ok(new Gson().toJson(user)).build();
 	}
 }
